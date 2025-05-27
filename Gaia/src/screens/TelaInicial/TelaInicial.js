@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import Header from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
 
 
 export default function TelaInicial() {
@@ -8,6 +9,7 @@ export default function TelaInicial() {
         <Header />
         <Text style={styles.title}>Bem-vindo à Tela Inicial!</Text>
         <Text style={styles.subtitle}>Você está logado com sucesso.</Text>
+        <Footer/>
     </View>
   );
 }
