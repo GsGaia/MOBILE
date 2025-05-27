@@ -24,7 +24,7 @@ export default function Entrar({ navigation }) {
 
   if (email === 'teste@gaia.com' && senha === '123456') {
     Alert.alert('Sucesso', 'Login realizado com sucesso!');
-    navigation.navigate('Home'); 
+    navigation.navigate('TelaInicial'); 
   } else {
     Alert.alert('Erro', 'E-mail ou senha incorretos.');
   }

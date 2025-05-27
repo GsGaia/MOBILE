@@ -5,7 +5,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 import Login from './src/screens/Login/Login';
 import Entrar from './src/screens/Entrar/Entrar';
-
+import TelaInicial from './src/screens/TelaInicial/TelaInicial'
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +44,7 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Entrar" component={Entrar} />
+        <Stack.Screen name="TelaInicial" component={TelaInicial} />
       </Stack.Navigator>
     </NavigationContainer>
   );
