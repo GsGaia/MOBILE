@@ -1,10 +1,13 @@
 import { View, Text, StyleSheet } from 'react-native';
+import Header from '../../components/Header/Header';
 
-export default function Home() {
+
+export default function TelaInicial() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bem-vindo à Tela Inicial!</Text>
-      <Text style={styles.subtitle}>Você está logado com sucesso.</Text>
+        <Header />
+        <Text style={styles.title}>Bem-vindo à Tela Inicial!</Text>
+        <Text style={styles.subtitle}>Você está logado com sucesso.</Text>
     </View>
   );
 }
@@ -12,7 +15,6 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 30,
     backgroundColor: '#56A829',
     justifyContent: 'center',
   },

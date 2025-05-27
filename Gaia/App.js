@@ -32,7 +32,7 @@ function Home({ navigation }) {
         </Text>
       </Text>
 
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </View>
   );
 }
