@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 130,
     backgroundColor: '#1F1E1E',
+
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
   menuDropdown: {
     position: 'absolute',
     top: 120,
-    right: 5,
+    right: 0,
     backgroundColor: '#1F1E1E',
     borderRadius: 8,
     paddingVertical: 10,
