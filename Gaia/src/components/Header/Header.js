@@ -1,12 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Animated,
-  Easing,
-} from 'react-native';
+import React, { useState, useRef, useEffect} from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Animated, Easing, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -46,7 +39,10 @@ export default function Header() {
   return (
     <>
       <View style={styles.header}>
-        <Text style={styles.titulo}>Gaia</Text>
+        <Image 
+            source={require('../../../assets/G.png')} 
+            style={{ width: 130, height: 120 }} 
+        />
 
         <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
           <MaterialIcons name="menu" size={32} color="#CBE3BF" />
