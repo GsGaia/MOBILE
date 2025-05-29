@@ -18,7 +18,7 @@ export default function Home({ navigation }) {
         <Text style={styles.botaoTexto}>Ver Locais em Risco</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('CadastroAlimentos')}>
+      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Doar')}>
         <MaterialIcons name="add-shopping-cart" size={24} color="#CBE3BF" />
         <Text style={styles.botaoTexto}>Cadastrar Alimentos</Text>
       </TouchableOpacity>

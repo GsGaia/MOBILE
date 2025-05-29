@@ -7,6 +7,9 @@ import Login from './src/screens/Login/Login';
 import Entrar from './src/screens/Entrar/Entrar';
 import TelaInicial from './src/screens/TelaInicial/TelaInicial'
 import Doar from './src/screens/Doar/Doar'
+import Locais from './src/screens/Locais/Locais';
+import Doacoes from './src/screens/Doacoes/Doacoes';
+import Ajuda from './src/screens/Ajuda/Ajuda';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +50,9 @@ export default function App() {
         <Stack.Screen name="Entrar" component={Entrar} />
         <Stack.Screen name="TelaInicial" component={TelaInicial} />
         <Stack.Screen name="Doar" component={Doar} />
+        <Stack.Screen name="Locais" component={Locais} />
+        <Stack.Screen name="Doacoes" component={Doacoes} />
+        <Stack.Screen name="Ajuda" component={Ajuda} />
       </Stack.Navigator>
     </NavigationContainer>
   );

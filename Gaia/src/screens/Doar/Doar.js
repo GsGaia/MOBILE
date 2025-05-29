@@ -1,62 +1,61 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert,} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 
 export default function Doar() {
-  const [alimento, setAlimento] = useState('');
+  const [nome, setNome] = useState('');
   const [quantidade, setQuantidade] = useState('');
-  const [local, setLocal] = useState('');
 
-  const handleCadastro = () => {
-    if (!alimento || !quantidade || !local) {
-      Alert.alert('Erro', 'Preencha todos os campos.');
+  const salvarAlimento = async () => {
+    if (!nome || !quantidade) {
+      Alert.alert('Atenção', 'Preencha todos os campos.');
       return;
     }
 
-    Alert.alert('Sucesso', `Alimento "${alimento}" cadastrado com sucesso!`);
-    setAlimento('');
-    setQuantidade('');
-    setLocal('');
+    try {
+      const alimento = { nome, quantidade };
+      const dadosExistentes = await AsyncStorage.getItem('alimentos');
+      const alimentos = dadosExistentes ? JSON.parse(dadosExistentes) : [];
+
+      alimentos.push(alimento);
+      await AsyncStorage.setItem('alimentos', JSON.stringify(alimentos));
+
+      Alert.alert('Sucesso', 'Alimento cadastrado com sucesso!');
+      setNome('');
+      setQuantidade('');
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível salvar os dados.');
+    }
   };
 
   return (
     <View style={styles.container}>
       <Header />
-      <ScrollView contentContainerStyle={styles.content}>
+      <Text style={styles.titulo}>Cadastrar Doação</Text>
 
-        <Text style={styles.titulo}>Cadastro de Alimentos</Text>
+      <TextInput
+        placeholder="Nome do alimento"
+        placeholderTextColor="#1F1F1F"
+        style={styles.input}
+        value={nome}
+        onChangeText={setNome}
+      />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Nome do alimento"
-          placeholderTextColor="#ccc"
-          value={alimento}
-          onChangeText={setAlimento}
-        />
+      <TextInput
+        placeholder="Quantidade"
+        placeholderTextColor="#1F1F1F"
+        style={styles.input}
+        value={quantidade}
+        onChangeText={setQuantidade}
+        keyboardType="numeric"
+      />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Quantidade"
-          placeholderTextColor="#ccc"
-          value={quantidade}
-          onChangeText={setQuantidade}
-          keyboardType="numeric"
-        />
+      <TouchableOpacity style={styles.botao} onPress={salvarAlimento}>
+        <Text style={styles.botaoTexto}>Salvar</Text>
+      </TouchableOpacity>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Local de entrega"
-          placeholderTextColor="#ccc"
-          value={local}
-          onChangeText={setLocal}
-        />
-
-        <TouchableOpacity style={styles.botao} onPress={handleCadastro}>
-          <Text style={styles.textoBotao}>Cadastrar</Text>
-        </TouchableOpacity>
-
-      </ScrollView>
       <Footer />
     </View>
   );
@@ -66,34 +65,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#56A829',
-  },
-  content: {
-    paddingTop: 180,
-    paddingBottom: 100,
-    paddingHorizontal: 20,
+    paddingTop: 160,
   },
   titulo: {
-    fontSize: 24,
+    fontSize: 22,
+    color: '#1F1F1F',
     fontWeight: 'bold',
-    color: '#CBE3BF',
     marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    backgroundColor: '#1F1F1F',
-    color: '#fff',
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 10,
+    backgroundColor: '#CBE3BF',
+    padding: 15,
+    borderRadius: 8,
+    margin: 15,
+    color: '#1F1F1F',
   },
   botao: {
     backgroundColor: '#1F1F1F',
     padding: 14,
-    borderRadius: 10,
+    margin: 15,
+    borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
   },
-  textoBotao: {
+  botaoTexto: {
     color: '#CBE3BF',
     fontWeight: 'bold',
   },
