@@ -5,11 +5,13 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 import Login from './src/screens/Login/Login';
 import Entrar from './src/screens/Entrar/Entrar';
-import TelaInicial from './src/screens/TelaInicial/TelaInicial'
-import Doar from './src/screens/Doar/Doar'
+import TelaInicial from './src/screens/TelaInicial/TelaInicial';
+import Doar from './src/screens/Doar/Doar';
 import Locais from './src/screens/Locais/Locais';
 import Doacoes from './src/screens/Doacoes/Doacoes';
 import Ajuda from './src/screens/Ajuda/Ajuda';
+import Perfil from './src/screens/Perfil/Perfil';
+import LoadingScreen from './src/screens/LoadingScreen/LoadingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,7 +46,8 @@ function Home({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName="LoadingScreen" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="LoadingScreen" component={LoadingScreen} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Entrar" component={Entrar} />
@@ -53,6 +56,7 @@ export default function App() {
         <Stack.Screen name="Locais" component={Locais} />
         <Stack.Screen name="Doacoes" component={Doacoes} />
         <Stack.Screen name="Ajuda" component={Ajuda} />
+        <Stack.Screen name="Perfil" component={Perfil} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -96,7 +100,7 @@ const styles = StyleSheet.create({
     top: 110,
     textAlign: 'center',
   },
-  link:{
-    color:'#1F1F1F'
-  }
+  link: {
+    color: '#1F1F1F',
+  },
 });

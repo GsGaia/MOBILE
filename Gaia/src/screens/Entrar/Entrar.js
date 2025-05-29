@@ -1,58 +1,48 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Entrar({ navigation }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
 
-  function validarCampos() {
+  const validarCampos = () => {
     if (!email.includes('@')) {
       Alert.alert('Erro', 'Digite um e-mail válido.');
       return false;
     }
-
     if (senha.length < 6) {
-      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres.');
+      Alert.alert('Erro', 'Senha muito curta.');
       return false;
     }
-
     return true;
-  }
+  };
 
-  function autenticar() {
-  if (!validarCampos()) return;
+  const autenticar = async () => {
+    if (!validarCampos()) return;
 
-  if (email === 'teste@gaia.com' && senha === '123456') {
-    Alert.alert('Sucesso', 'Login realizado com sucesso!');
-    navigation.navigate('TelaInicial'); 
-  } else {
-    Alert.alert('Erro', 'E-mail ou senha incorretos.');
-  }
-}
+    const dados = await AsyncStorage.getItem('usuario');
+    if (!dados) return Alert.alert('Erro', 'Nenhuma conta cadastrada.');
+
+    const usuario = JSON.parse(dados);
+
+    if (email === usuario.email && senha === usuario.senha) {
+      Alert.alert('Sucesso', 'Login realizado!');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'TelaInicial', params: { nome: usuario.nome } }],
+      });
+    } else {
+      Alert.alert('Erro', 'E-mail ou senha incorretos.');
+    }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>Insira seus dados</Text>
-
-        <TextInput
-          placeholder="E-mail"
-          placeholderTextColor="#000"
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-
-        <TextInput
-          placeholder="Senha"
-          placeholderTextColor="#000"
-          style={styles.input}
-          value={senha}
-          onChangeText={setSenha}
-          secureTextEntry
-        />
-
+        <TextInput placeholder="E-mail" style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
+        <TextInput placeholder="Senha" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry />
         <TouchableOpacity style={styles.button} onPress={autenticar}>
           <Text style={styles.buttonText}>ENTRAR</Text>
         </TouchableOpacity>
@@ -60,7 +50,6 @@ export default function Entrar({ navigation }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

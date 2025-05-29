@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: Platform.OS === 'android' ? 40 : 0,
+    bottom: Platform.OS === 'android' ? 0 : 0,
     height: 70,
     flexDirection: 'row',
     justifyContent: 'space-around',

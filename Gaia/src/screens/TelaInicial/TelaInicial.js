@@ -1,14 +1,30 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header';
 
+export default function TelaInicial({ navigation }) {
+  const [nomeUsuario, setNomeUsuario] = useState('');
 
-export default function Home({ navigation }) {
+  useEffect(() => {
+    async function carregarUsuario() {
+      const dados = await AsyncStorage.getItem('usuario');
+      if (dados) {
+        const usuario = JSON.parse(dados);
+        setNomeUsuario(usuario.nome);
+      }
+    }
+    carregarUsuario();
+  }, []);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Header/>
-      <Text style={styles.titulo}>Bem-vindo à Gaia!</Text>
+      <Text style={styles.titulo}>
+        {nomeUsuario ? `Bem-vindo à Gaia, ${nomeUsuario}!` : 'Bem-vindo à Gaia!'}
+      </Text>
       <Text style={styles.subtitulo}>
         Aqui você acompanha locais com risco de fortes chuvas e pode ajudar com doações.
       </Text>
@@ -33,6 +49,7 @@ export default function Home({ navigation }) {
         <Text style={styles.botaoTexto}>Como Ajudar</Text>
       </TouchableOpacity>
       <Footer/>
+      <StatusBar barStyle="light-content" />
     </ScrollView>
   );
 }

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Login() {
+export default function Login({ navigation }) {
   const [form, setForm] = useState({
     nome: '',
     cpf: '',
@@ -14,88 +15,40 @@ export default function Login() {
     setForm({ ...form, [field]: value });
   };
 
-  const validarEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
+  const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validarCPF = (cpf) => cpf.replace(/\D/g, '').length === 11;
 
-  const validarCPF = (cpf) => {
-    const somenteNumeros = cpf.replace(/\D/g, '');
-    return somenteNumeros.length === 11;
-  };
+  const handleSubmit = async () => {
+    if (form.nome.trim().length < 3) return Alert.alert('Erro', 'Nome deve ter pelo menos 3 caracteres.');
+    if (!validarCPF(form.cpf)) return Alert.alert('Erro', 'CPF inválido.');
+    if (!validarEmail(form.email)) return Alert.alert('Erro', 'E-mail inválido.');
+    if (form.senha.length < 6) return Alert.alert('Erro', 'Senha deve ter pelo menos 6 caracteres.');
+    if (form.senha !== form.confirmarSenha) return Alert.alert('Erro', 'Senhas não coincidem.');
 
-  const handleSubmit = () => {
-    if (form.nome.trim().length < 3) {
-      Alert.alert('Erro', 'O nome deve ter pelo menos 3 caracteres.');
-      return;
+    try {
+      await AsyncStorage.setItem('usuario', JSON.stringify(form));
+      
+      await AsyncStorage.setItem('usuarioLogado', 'true');
+
+      Alert.alert('Sucesso', 'Cadastro realizado!');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'TelaInicial', params: { nome: form.nome } }],
+      });
+    } catch (error) {
+      Alert.alert('Erro', 'Erro ao salvar dados');
     }
-
-    if (!validarCPF(form.cpf)) {
-      Alert.alert('Erro', 'CPF deve conter 11 números.');
-      return;
-    }
-
-    if (!validarEmail(form.email)) {
-      Alert.alert('Erro', 'E-mail inválido.');
-      return;
-    }
-
-    if (form.senha.length < 6) {
-      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
-
-    if (form.senha !== form.confirmarSenha) {
-      Alert.alert('Erro', 'As senhas não coincidem.');
-      return;
-    }
-
-    Alert.alert('Sucesso', 'Cadastro enviado com sucesso!');
-    console.log('Dados válidos:', form);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>Insira seus dados</Text>
-
-        <TextInput
-          placeholder="Nome completo"
-          style={styles.input}
-          value={form.nome}
-          onChangeText={(text) => handleChange('nome', text)}
-        />
-        <TextInput
-          placeholder="CPF"
-          style={styles.input}
-          keyboardType="numeric"
-          value={form.cpf}
-          onChangeText={(text) => handleChange('cpf', text)}
-          maxLength={14}
-        />
-        <TextInput
-          placeholder="E-mail"
-          style={styles.input}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={form.email}
-          onChangeText={(text) => handleChange('email', text)}
-        />
-        <TextInput
-          placeholder="Senha"
-          style={styles.input}
-          secureTextEntry
-          value={form.senha}
-          onChangeText={(text) => handleChange('senha', text)}
-        />
-        <TextInput
-          placeholder="Confirme sua senha"
-          style={styles.input}
-          secureTextEntry
-          value={form.confirmarSenha}
-          onChangeText={(text) => handleChange('confirmarSenha', text)}
-        />
-
+        <TextInput placeholder="Nome completo" style={styles.input} value={form.nome} onChangeText={(text) => handleChange('nome', text)} />
+        <TextInput placeholder="CPF" style={styles.input} keyboardType="numeric" value={form.cpf} onChangeText={(text) => handleChange('cpf', text)} maxLength={14} />
+        <TextInput placeholder="E-mail" style={styles.input} keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={(text) => handleChange('email', text)} />
+        <TextInput placeholder="Senha" style={styles.input} secureTextEntry value={form.senha} onChangeText={(text) => handleChange('senha', text)} />
+        <TextInput placeholder="Confirme sua senha" style={styles.input} secureTextEntry value={form.confirmarSenha} onChangeText={(text) => handleChange('confirmarSenha', text)} />
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>ENVIAR</Text>
         </TouchableOpacity>
