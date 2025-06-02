@@ -1,4 +1,4 @@
-// Doar.js
+
 import React, { useState } from 'react';
 import {
   View,
@@ -32,18 +32,18 @@ export default function Doar() {
       const dadosExistentes = await AsyncStorage.getItem(categoria);
       const doacoes = dadosExistentes ? JSON.parse(dadosExistentes) : [];
 
-      // Verifica se o item já existe (ignorando maiúsculas/minúsculas)
+      
       const indexExistente = doacoes.findIndex(
         (item) => item.nome.toLowerCase() === nome.toLowerCase()
       );
 
       if (indexExistente !== -1) {
-        // Acumula a quantidade (convertendo para número, somando e convertendo de volta para string)
+        
         doacoes[indexExistente].quantidade = String(
           Number(doacoes[indexExistente].quantidade) + Number(quantidade)
         );
       } else {
-        // Se não existe, adiciona novo item
+        
         doacoes.push(novaDoacao);
       }
 
@@ -65,7 +65,7 @@ export default function Doar() {
       <Header />
       <Text style={styles.titulo}>Cadastrar Doação</Text>
 
-      {/* Categoria acima do nome */}
+      
       <Text style={styles.label}>Categoria</Text>
       <TouchableOpacity
         style={styles.selectBox}
