@@ -1,5 +1,16 @@
+// Doar.js
 import React, { useState } from 'react';
-import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert,} from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Modal,
+  Pressable,
+  FlatList,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -7,36 +18,95 @@ import Footer from '../../components/Footer/Footer';
 export default function Doar() {
   const [nome, setNome] = useState('');
   const [quantidade, setQuantidade] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const salvarAlimento = async () => {
-    if (!nome || !quantidade) {
+  const salvarDoacao = async () => {
+    if (!nome || !quantidade || !categoria) {
       Alert.alert('Atenção', 'Preencha todos os campos.');
       return;
     }
 
     try {
-      const alimento = { nome, quantidade };
-      const dadosExistentes = await AsyncStorage.getItem('alimentos');
-      const alimentos = dadosExistentes ? JSON.parse(dadosExistentes) : [];
+      const novaDoacao = { nome, quantidade };
+      const dadosExistentes = await AsyncStorage.getItem(categoria);
+      const doacoes = dadosExistentes ? JSON.parse(dadosExistentes) : [];
 
-      alimentos.push(alimento);
-      await AsyncStorage.setItem('alimentos', JSON.stringify(alimentos));
+      // Verifica se o item já existe (ignorando maiúsculas/minúsculas)
+      const indexExistente = doacoes.findIndex(
+        (item) => item.nome.toLowerCase() === nome.toLowerCase()
+      );
 
-      Alert.alert('Sucesso', 'Alimento cadastrado com sucesso!');
+      if (indexExistente !== -1) {
+        // Acumula a quantidade (convertendo para número, somando e convertendo de volta para string)
+        doacoes[indexExistente].quantidade = String(
+          Number(doacoes[indexExistente].quantidade) + Number(quantidade)
+        );
+      } else {
+        // Se não existe, adiciona novo item
+        doacoes.push(novaDoacao);
+      }
+
+      await AsyncStorage.setItem(categoria, JSON.stringify(doacoes));
+
+      Alert.alert('Sucesso', 'Doação cadastrada com sucesso!');
       setNome('');
       setQuantidade('');
+      setCategoria('');
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar os dados.');
     }
   };
+
+  const categorias = ['alimentos', 'roupas', 'remedios'];
 
   return (
     <View style={styles.container}>
       <Header />
       <Text style={styles.titulo}>Cadastrar Doação</Text>
 
+      {/* Categoria acima do nome */}
+      <Text style={styles.label}>Categoria</Text>
+      <TouchableOpacity
+        style={styles.selectBox}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.selectText}>
+          {categoria
+            ? categoria.charAt(0).toUpperCase() + categoria.slice(1)
+            : 'Selecione uma categoria'}
+        </Text>
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <FlatList
+              data={categorias}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <Pressable
+                  style={styles.option}
+                  onPress={() => {
+                    setCategoria(item);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.optionText}>
+                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                  </Text>
+                </Pressable>
+              )}
+            />
+          </View>
+        </Pressable>
+      </Modal>
+
       <TextInput
-        placeholder="Nome do alimento"
+        placeholder="Nome do item"
         placeholderTextColor="#1F1F1F"
         style={styles.input}
         value={nome}
@@ -52,7 +122,7 @@ export default function Doar() {
         keyboardType="numeric"
       />
 
-      <TouchableOpacity style={styles.botao} onPress={salvarAlimento}>
+      <TouchableOpacity style={styles.botao} onPress={salvarDoacao}>
         <Text style={styles.botaoTexto}>Salvar</Text>
       </TouchableOpacity>
 
@@ -79,6 +149,43 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     margin: 15,
+    color: '#1F1F1F',
+  },
+  label: {
+    fontWeight: 'bold',
+    marginLeft: 15,
+    marginBottom: 5,
+    color: '#1F1F1F',
+  },
+  selectBox: {
+    backgroundColor: '#CBE3BF',
+    padding: 15,
+    borderRadius: 8,
+    marginHorizontal: 15,
+    marginBottom: 15,
+  },
+  selectText: {
+    color: '#1F1F1F',
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#00000088',
+  },
+  modalContent: {
+    marginHorizontal: 30,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+  },
+  option: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  optionText: {
+    fontSize: 16,
     color: '#1F1F1F',
   },
   botao: {

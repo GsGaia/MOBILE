@@ -1,91 +1,65 @@
+// Doacoes.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 
 export default function Doacoes() {
-  const [alimentos, setAlimentos] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [alimentoEditando, setAlimentoEditando] = useState(null);
-  const [novoNome, setNovoNome] = useState('');
-  const [novaQuantidade, setNovaQuantidade] = useState('');
+  const [dados, setDados] = useState({
+    alimentos: [],
+    roupas: [],
+    remedios: [],
+  });
 
-  const carregarAlimentos = async () => {
-    const dados = await AsyncStorage.getItem('alimentos');
-    setAlimentos(dados ? JSON.parse(dados) : []);
+  const carregarDados = async () => {
+    const categorias = ['alimentos', 'roupas', 'remedios'];
+    const novasDoacoes = {};
+
+    for (const cat of categorias) {
+      const json = await AsyncStorage.getItem(cat);
+      novasDoacoes[cat] = json ? JSON.parse(json) : [];
+    }
+
+    setDados(novasDoacoes);
   };
 
   useFocusEffect(
     React.useCallback(() => {
-      carregarAlimentos();
+      carregarDados();
     }, [])
   );
 
-  const apagarTudo = async () => {
-    Alert.alert('Confirmar', 'Deseja apagar todas as doações?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sim',
-        onPress: async () => {
-          await AsyncStorage.removeItem('alimentos');
-          setAlimentos([]);
-        },
-      },
-    ]);
-  };
-
-  const abrirModalEditar = (item, index) => {
-    setAlimentoEditando(index);
-    setNovoNome(item.nome);
-    setNovaQuantidade(item.quantidade);
-    setModalVisible(true);
-  };
-
-  const salvarEdicao = async () => {
-    const atualizados = [...alimentos];
-    atualizados[alimentoEditando] = { nome: novoNome, quantidade: novaQuantidade };
-    await AsyncStorage.setItem('alimentos', JSON.stringify(atualizados));
-    setAlimentos(atualizados);
-    setModalVisible(false);
-  };
+  const renderCategoria = (titulo, lista) => (
+    <View key={titulo}>
+      <Text style={styles.subtitulo}>{titulo}</Text>
+      {lista.length === 0 ? (
+        <Text style={styles.semDados}>Nenhuma doação cadastrada.</Text>
+      ) : (
+        lista.map((item, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.nome}>{item.nome}</Text>
+            <Text style={styles.quantidade}>Quantidade: {item.quantidade}</Text>
+          </View>
+        ))
+      )}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-    <Header />
+      <Header />
+      <Text style={styles.titulo}>Doações Recebidas</Text>
 
-    <Text style={styles.titulo}>Doações Recebidas</Text>
+      <ScrollView contentContainerStyle={styles.lista}>
+        {renderCategoria('Alimentos', dados.alimentos)}
+        {renderCategoria('Roupas', dados.roupas)}
+        {renderCategoria('Remédios', dados.remedios)}
+      </ScrollView>
 
-    {alimentos.length > 0 && (
-      <TouchableOpacity style={styles.botaoApagarTopo} onPress={apagarTudo}>
-        <Text style={styles.botaoApagarTexto}>🗑️ Apagar todas as doações</Text>
-      </TouchableOpacity>
-    )}
-
-    <ScrollView contentContainerStyle={styles.lista}>
-      {alimentos.length === 0 ? (
-        <Text style={styles.semDados}>Nenhuma doação cadastrada.</Text>
-      ) : (
-        alimentos.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.card}
-            onLongPress={() => abrirModalEditar(item, index)}
-          >
-            <Text style={styles.nome}>{item.nome}</Text>
-            <Text style={styles.quantidade}>Quantidade: {item.quantidade}</Text>
-            <Text style={styles.editarTexto}>Pressione e segure para editar</Text>
-          </TouchableOpacity>
-        ))
-      )}
-    </ScrollView>
-
-    <Modal visible={modalVisible} transparent animationType="slide">
-    </Modal>
-
-    <Footer />
-  </View>
+      <Footer />
+    </View>
   );
 }
 
@@ -102,9 +76,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
+  subtitulo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F1F1F',
+    marginTop: 15,
+    marginLeft: 16,
+    marginBottom: 8,
+  },
   lista: {
-    padding: 16,
     paddingBottom: 100,
+    paddingHorizontal: 16,
   },
   card: {
     backgroundColor: '#CBE3BF',
@@ -121,73 +103,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1F1F1F',
   },
-  editarTexto: {
-    fontSize: 10,
-    marginTop: 4,
-    color: '#555',
-  },
-  botaoApagar: {
-    backgroundColor: '#1F1F1F',
-    margin: 20,
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-  },
-  botaoApagarTexto: {
-    color: '#CBE3BF',
-    fontWeight: 'bold',
-  },
   semDados: {
     textAlign: 'center',
     color: '#1F1F1F',
-    fontSize: 16,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#000000aa',
-    padding: 20,
-  },
-  modalBox: {
-    backgroundColor: '#CBE3BF',
-    borderRadius: 8,
-    padding: 20,
-  },
-  modalTitulo: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F1F1F',
+    fontSize: 14,
     marginBottom: 10,
-    textAlign: 'center',
   },
-  input: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    color: '#1F1F1F',
-  },
-  botaoSalvar: {
-    backgroundColor: '#1F1F1F',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  botaoSalvarTexto: {
-    color: '#CBE3BF',
-    fontWeight: 'bold',
-  },
-  cancelar: {
-    marginTop: 12,
-    textAlign: 'center',
-    color: '#1F1F1F',
-  },
-  botaoApagarTopo: {
-  backgroundColor: '#1F1F1F',
-  marginHorizontal: 20,
-  marginBottom: 10,
-  padding: 14,
-  borderRadius: 8,
-  alignItems: 'center',
-},
 });
