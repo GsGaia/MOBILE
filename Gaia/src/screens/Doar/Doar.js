@@ -114,7 +114,7 @@ export default function Doar() {
       />
 
       <TextInput
-        placeholder="Quantidade"
+        placeholder="Quantidade(kg, caixas)"
         placeholderTextColor="#1F1F1F"
         style={styles.input}
         value={quantidade}

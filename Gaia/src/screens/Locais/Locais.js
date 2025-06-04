@@ -61,7 +61,7 @@ export default function Locais() {
     }
 
     let risco = 'Baixo';
-    const proximasHoras = previsao.list.slice(0, 6); // 18 horas (3h cada)
+    const proximasHoras = previsao.list.slice(0, 6);
     for (const hora of proximasHoras) {
       const chuva = hora.rain?.['3h'] || 0;
       if (chuva > 10) {
