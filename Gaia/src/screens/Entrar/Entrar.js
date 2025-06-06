@@ -21,19 +21,28 @@ export default function Entrar({ navigation }) {
   const autenticar = async () => {
     if (!validarCampos()) return;
 
-    const dados = await AsyncStorage.getItem('usuario');
-    if (!dados) return Alert.alert('Erro', 'Nenhuma conta cadastrada.');
+    try {
+      const response = await fetch('http://191.234.186.183:8080/api/user');
+      if (!response.ok) throw new Error('Erro ao buscar usuários.');
 
-    const usuario = JSON.parse(dados);
+      const usuarios = await response.json();
 
-    if (email === usuario.email && senha === usuario.senha) {
+      const usuarioEncontrado = usuarios.find(u => u.email === email && u.password === senha);
+
+      if (!usuarioEncontrado) {
+        return Alert.alert('Erro', 'E-mail ou senha incorretos.');
+      }
+
+      await AsyncStorage.setItem('usuario', JSON.stringify(usuarioEncontrado));
+      await AsyncStorage.setItem('usuarioLogado', 'true');
+
       Alert.alert('Sucesso', 'Login realizado!');
       navigation.reset({
         index: 0,
-        routes: [{ name: 'TelaInicial', params: { nome: usuario.nome } }],
+        routes: [{ name: 'TelaInicial', params: { nome: usuarioEncontrado.name } }],
       });
-    } else {
-      Alert.alert('Erro', 'E-mail ou senha incorretos.');
+    } catch (error) {
+      Alert.alert('Erro', error.message || 'Erro ao autenticar usuário.');
     }
   };
 
@@ -41,8 +50,21 @@ export default function Entrar({ navigation }) {
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>Insira seus dados</Text>
-        <TextInput placeholder="E-mail" style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
-        <TextInput placeholder="Senha" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry />
+        <TextInput
+          placeholder="E-mail"
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <TextInput
+          placeholder="Senha"
+          style={styles.input}
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry
+        />
         <TouchableOpacity style={styles.button} onPress={autenticar}>
           <Text style={styles.buttonText}>ENTRAR</Text>
         </TouchableOpacity>
@@ -50,6 +72,7 @@ export default function Entrar({ navigation }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
