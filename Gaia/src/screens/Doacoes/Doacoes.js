@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Header from '../../components/Header/Header';
@@ -7,45 +14,39 @@ import Footer from '../../components/Footer/Footer';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
 export default function Doacoes() {
-  const [dados, setDados] = useState({
-    alimentos: [],
-    roupas: [],
-    remedios: [],
-  });
+  const [doacoes, setDoacoes] = useState([]);
+  const [userId, setUserId] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const carregarDados = async () => {
-    const categorias = ['alimentos', 'roupas', 'remedios'];
-    const novasDoacoes = {};
+  const carregarDoacoes = async () => {
+    try {
+      const usuarioJson = await AsyncStorage.getItem('usuario');
+      if (!usuarioJson) {
+        Alert.alert('Erro', 'Usuário não encontrado.');
+        return;
+      }
 
-    for (const cat of categorias) {
-      const json = await AsyncStorage.getItem(cat);
-      novasDoacoes[cat] = json ? JSON.parse(json) : [];
+      const usuario = JSON.parse(usuarioJson);
+      setUserId(usuario.idUser);
+
+      const response = await fetch('http://191.234.186.183:8080/api/requestion');
+      if (!response.ok) throw new Error('Erro ao buscar doações.');
+
+      const todas = await response.json();
+
+      setDoacoes(todas);
+    } catch (error) {
+      Alert.alert('Erro', error.message || 'Erro ao carregar doações.');
     }
-
-    setDados(novasDoacoes);
-  };
-
-  const removerTodasDoacoes = async () => {
-    const categorias = ['alimentos', 'roupas', 'remedios'];
-    for (const cat of categorias) {
-      await AsyncStorage.removeItem(cat);
-    }
-    carregarDados();
   };
 
   useFocusEffect(
     React.useCallback(() => {
-      carregarDados();
+      carregarDoacoes();
     }, [])
   );
 
-  const calcularTotalDoacoes = () => {
-    const todas = [...dados.alimentos, ...dados.roupas, ...dados.remedios];
-    return todas.reduce((total, item) => total + Number(item.quantidade || 0), 0);
-  };
-
-  const total = calcularTotalDoacoes();
+  const total = doacoes.length;
   const meta = 1000;
   const progresso = Math.min((total / meta) * 100, 100);
 
@@ -57,39 +58,36 @@ export default function Doacoes() {
     }
   }, [total]);
 
-  const temDoacoes =
-    dados.alimentos.length > 0 ||
-    dados.roupas.length > 0 ||
-    dados.remedios.length > 0;
-
-  const renderCategoria = (titulo, lista) => (
-    <View key={titulo}>
-      <Text style={styles.subtitulo}>{titulo}</Text>
-      {lista.length === 0 ? (
-        <Text style={styles.semDados}>Nenhuma doação cadastrada.</Text>
-      ) : (
-        lista.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.nome}>{item.nome}</Text>
-            <Text style={styles.quantidade}>Quantidade: {item.quantidade}</Text>
-          </View>
-        ))
-      )}
-    </View>
-  );
+  const renderDoacoes = () =>
+    doacoes.length === 0 ? (
+      <Text style={styles.semDados}>Nenhuma doação cadastrada.</Text>
+    ) : (
+      doacoes.map((item, index) => (
+        <View key={index} style={styles.card}>
+          <Text style={styles.nome}>{item.title}</Text>
+          <Text style={styles.quantidade}>Quantidade: {item.unit}</Text>
+          <Text style={styles.quantidade}>
+          </Text>
+        </View>
+      ))
+    );
 
   return (
     <View style={styles.container}>
       <Header />
-      <Text style={styles.titulo}>Doações Recebidas</Text>
+      <Text style={styles.titulo}>Minhas Doações</Text>
 
-      {temDoacoes && (
+      <TouchableOpacity style={styles.refreshBotao} onPress={carregarDoacoes}>
+        <Text style={styles.refreshTexto}>Atualizar</Text>
+      </TouchableOpacity>
+
+      {doacoes.length > 0 && (
         <View style={styles.barraContainer}>
           <View style={styles.barraExterna}>
             <View style={[styles.barraInterna, { width: `${progresso}%` }]} />
           </View>
           <Text style={styles.metaTexto}>
-            {total} / {meta} unidades doadas
+            {total} / {meta} doações registradas
           </Text>
 
           {total >= meta && (
@@ -114,15 +112,7 @@ export default function Doacoes() {
       )}
 
       <ScrollView contentContainerStyle={styles.lista}>
-        {renderCategoria('Alimentos', dados.alimentos)}
-        {renderCategoria('Roupas', dados.roupas)}
-        {renderCategoria('Remédios', dados.remedios)}
-
-        {temDoacoes && (
-          <TouchableOpacity style={styles.botaoRemover} onPress={removerTodasDoacoes}>
-            <Text style={styles.textoBotao}>Remover Todas as Doações</Text>
-          </TouchableOpacity>
-        )}
+        {renderDoacoes()}
       </ScrollView>
 
       <Footer />
@@ -143,13 +133,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
-  subtitulo: {
-    fontSize: 18,
+  refreshBotao: {
+    alignSelf: 'center',
+    marginBottom: 10,
+    backgroundColor: '#1F1F1F',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  refreshTexto: {
+    color: '#CBE3BF',
     fontWeight: 'bold',
-    color: '#1F1F1F',
-    marginTop: 15,
-    marginLeft: 16,
-    marginBottom: 8,
+    fontSize: 14,
   },
   lista: {
     paddingBottom: 100,
@@ -174,7 +169,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#1F1F1F',
     fontSize: 14,
-    marginBottom: 10,
+    marginTop: 10,
   },
   barraContainer: {
     marginHorizontal: 20,
@@ -216,17 +211,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 22,
-  },
-  botaoRemover: {
-    marginTop: 20,
-    backgroundColor: '#1F1F1F',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  textoBotao: {
-    color: '#CBE3BF',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
 });

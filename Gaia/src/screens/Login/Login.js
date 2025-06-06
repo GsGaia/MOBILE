@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Login({ navigation }) {
+export default function Registro({ navigation }) {
   const [form, setForm] = useState({
     nome: '',
     cpf: '',
@@ -25,18 +25,44 @@ export default function Login({ navigation }) {
     if (form.senha.length < 6) return Alert.alert('Erro', 'Senha deve ter pelo menos 6 caracteres.');
     if (form.senha !== form.confirmarSenha) return Alert.alert('Erro', 'Senhas não coincidem.');
 
+    const body = {
+      name: form.nome,
+      cpf: form.cpf,
+      email: form.email,
+      password: form.senha,
+      creationDate: new Date().toISOString().split('T')[0],
+      role: 'USER',
+      activeUser: true,
+      requestions: []
+    };
+
     try {
-      await AsyncStorage.setItem('usuario', JSON.stringify(form));
-      
+      const response = await fetch('http://191.234.186.183:8080/api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Erro ao cadastrar usuário');
+      }
+
+      const data = await response.json();
+
+      await AsyncStorage.setItem('usuario', JSON.stringify(data));
       await AsyncStorage.setItem('usuarioLogado', 'true');
 
       Alert.alert('Sucesso', 'Cadastro realizado!');
       navigation.reset({
         index: 0,
-        routes: [{ name: 'TelaInicial', params: { nome: form.nome } }],
+        routes: [{ name: 'TelaInicial', params: { nome: data.name } }],
       });
+
     } catch (error) {
-      Alert.alert('Erro', 'Erro ao salvar dados');
+      Alert.alert('Erro', error.message || 'Erro ao salvar dados');
     }
   };
 
