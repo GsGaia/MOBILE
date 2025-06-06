@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,6 +19,18 @@ export default function Doar() {
   const [quantidade, setQuantidade] = useState('');
   const [categoria, setCategoria] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const buscarUsuario = async () => {
+      const dados = await AsyncStorage.getItem('usuario');
+      if (dados) {
+        const usuario = JSON.parse(dados);
+        setUserId(usuario.idUser);
+      }
+    };
+    buscarUsuario();
+  }, []);
 
   const salvarDoacao = async () => {
     if (!nome || !quantidade || !categoria) {
@@ -27,34 +38,40 @@ export default function Doar() {
       return;
     }
 
+    if (!userId) {
+      Alert.alert('Erro', 'Usuário não encontrado. Faça login novamente.');
+      return;
+    }
+
+    const body = {
+      title: nome,
+      description: `Doação de ${nome}`,
+      unit: quantidade,
+      requestDate: new Date().toISOString().split('T')[0],
+      userId: userId,
+      locationId: 1
+    };
+
     try {
-      const novaDoacao = { nome, quantidade };
-      const dadosExistentes = await AsyncStorage.getItem(categoria);
-      const doacoes = dadosExistentes ? JSON.parse(dadosExistentes) : [];
+      const response = await fetch('http://191.234.186.183:8080/api/requestion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
 
-      
-      const indexExistente = doacoes.findIndex(
-        (item) => item.nome.toLowerCase() === nome.toLowerCase()
-      );
-
-      if (indexExistente !== -1) {
-        
-        doacoes[indexExistente].quantidade = String(
-          Number(doacoes[indexExistente].quantidade) + Number(quantidade)
-        );
-      } else {
-        
-        doacoes.push(novaDoacao);
+      if (!response.ok) {
+        const erro = await response.text();
+        throw new Error(erro || 'Erro ao salvar doação.');
       }
-
-      await AsyncStorage.setItem(categoria, JSON.stringify(doacoes));
 
       Alert.alert('Sucesso', 'Doação cadastrada com sucesso!');
       setNome('');
       setQuantidade('');
       setCategoria('');
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar os dados.');
+      Alert.alert('Erro', error.message || 'Erro ao salvar dados.');
     }
   };
 
@@ -65,7 +82,6 @@ export default function Doar() {
       <Header />
       <Text style={styles.titulo}>Cadastrar Doação</Text>
 
-      
       <Text style={styles.label}>Categoria</Text>
       <TouchableOpacity
         style={styles.selectBox}
@@ -114,7 +130,7 @@ export default function Doar() {
       />
 
       <TextInput
-        placeholder="Quantidade(kg, caixas)"
+        placeholder="Quantidade (kg, caixas)"
         placeholderTextColor="#1F1F1F"
         style={styles.input}
         value={quantidade}
