@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Header from '../../components/Header/Header';
@@ -14,7 +21,10 @@ export default function Doacoes() {
   const carregarDoacoes = async () => {
     try {
       const usuarioJson = await AsyncStorage.getItem('usuario');
-      if (!usuarioJson) return;
+      if (!usuarioJson) {
+        Alert.alert('Erro', 'Usuário não encontrado.');
+        return;
+      }
 
       const usuario = JSON.parse(usuarioJson);
       setUserId(usuario.idUser);
@@ -24,8 +34,7 @@ export default function Doacoes() {
 
       const todas = await response.json();
 
-      const minhasDoacoes = todas.filter((item) => item.userId === usuario.idUser);
-      setDoacoes(minhasDoacoes);
+      setDoacoes(todas);
     } catch (error) {
       Alert.alert('Erro', error.message || 'Erro ao carregar doações.');
     }
@@ -57,7 +66,8 @@ export default function Doacoes() {
         <View key={index} style={styles.card}>
           <Text style={styles.nome}>{item.title}</Text>
           <Text style={styles.quantidade}>Quantidade: {item.unit}</Text>
-          <Text style={styles.quantidade}>Data: {item.requestDate}</Text>
+          <Text style={styles.quantidade}>
+          </Text>
         </View>
       ))
     );
@@ -66,6 +76,10 @@ export default function Doacoes() {
     <View style={styles.container}>
       <Header />
       <Text style={styles.titulo}>Minhas Doações</Text>
+
+      <TouchableOpacity style={styles.refreshBotao} onPress={carregarDoacoes}>
+        <Text style={styles.refreshTexto}>Atualizar</Text>
+      </TouchableOpacity>
 
       {doacoes.length > 0 && (
         <View style={styles.barraContainer}>
@@ -118,6 +132,19 @@ const styles = StyleSheet.create({
     color: '#CBE3BF',
     marginBottom: 10,
     textAlign: 'center',
+  },
+  refreshBotao: {
+    alignSelf: 'center',
+    marginBottom: 10,
+    backgroundColor: '#1F1F1F',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  refreshTexto: {
+    color: '#CBE3BF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   lista: {
     paddingBottom: 100,
