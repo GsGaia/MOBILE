@@ -12,8 +12,7 @@ Este aplicativo foi desenvolvido como parte da disciplina de Global Solution com
 
 ## 📹 Link para o Vídeo de Apresentação
 
-👉 [Assista no YouTube](https://www.youtube.com/SEU-LINK-AQUI)  
-_(Substitua pelo link verdadeiro do vídeo)_
+👉 [Assista no YouTube](https://youtu.be/t3BvjWpnrO0)  
 
 ## 💡 Descrição da Solução
 
